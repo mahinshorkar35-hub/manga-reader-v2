@@ -346,7 +346,6 @@
     text-align: center;
   }
 
-  .loading-state svg,
   .empty-state svg {
     color: var(--color-text-tertiary);
   }

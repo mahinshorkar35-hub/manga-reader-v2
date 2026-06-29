@@ -130,7 +130,7 @@
 
         <div class="setting-row">
           <div class="setting-info">
-            <label class="setting-label">Theme</label>
+            <span class="setting-label">Theme</span>
             <p class="setting-desc">Choose between dark and light appearance</p>
           </div>
           <div class="setting-control">
@@ -174,7 +174,7 @@
 
         <div class="setting-row">
           <div class="setting-info">
-            <label class="setting-label">Reading Direction</label>
+            <span class="setting-label">Reading Direction</span>
             <p class="setting-desc">Left-to-right (Western) or right-to-left (Manga)</p>
           </div>
           <div class="setting-control">
@@ -203,7 +203,7 @@
 
         <div class="setting-row">
           <div class="setting-info">
-            <label class="setting-label">Page Fit Mode</label>
+            <span class="setting-label">Page Fit Mode</span>
             <p class="setting-desc">How pages fit in the viewer</p>
           </div>
           <div class="setting-control">
@@ -221,7 +221,7 @@
 
         <div class="setting-row">
           <div class="setting-info">
-            <label class="setting-label">Show Page Numbers</label>
+            <span class="setting-label">Show Page Numbers</span>
             <p class="setting-desc">Display page number overlay during reading</p>
           </div>
           <div class="setting-control">
@@ -238,7 +238,7 @@
 
         <div class="setting-row">
           <div class="setting-info">
-            <label class="setting-label">Double Page Mode</label>
+            <span class="setting-label">Double Page Mode</span>
             <p class="setting-desc">Display two pages side by side</p>
           </div>
           <div class="setting-control">
@@ -260,7 +260,7 @@
 
         <div class="setting-row">
           <div class="setting-info">
-            <label class="setting-label">Manga Root Directory</label>
+            <span class="setting-label">Manga Root Directory</span>
             <p class="setting-desc">Default folder for manga scanning</p>
           </div>
           <div class="setting-control">
@@ -287,7 +287,7 @@
 
         <div class="setting-row">
           <div class="setting-info">
-            <label class="setting-label">Enable TTS</label>
+            <span class="setting-label">Enable TTS</span>
             <p class="setting-desc">Generate speech for manga dialogue</p>
           </div>
           <div class="setting-control">
@@ -349,7 +349,7 @@
 
           <div class="setting-row">
             <div class="setting-info">
-              <label class="setting-label">Vision Backend</label>
+              <span class="setting-label">Vision Backend</span>
               <p class="setting-desc">AI provider for manga panel analysis</p>
             </div>
             <div class="setting-control">

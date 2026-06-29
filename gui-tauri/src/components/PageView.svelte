@@ -6,6 +6,7 @@
    * onto a 2D canvas context with smooth transitions.
    */
   import { onMount, afterUpdate, createEventDispatcher } from 'svelte';
+  import { get } from 'svelte/store';
   import { invoke } from '@tauri-apps/api/core';
   import {
     currentChapter,
@@ -16,6 +17,7 @@
     isLoadingPage,
     pageImageData,
     totalPages,
+    showPageNumbers,
   } from '../lib/stores/index.js';
 
   const dispatch = createEventDispatcher();
@@ -78,8 +80,7 @@
     ctx.fillStyle = '#1a1a2e';
     ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
-    let fitMode = 'fit-width';
-    pageFitMode.subscribe((v) => (fitMode = v))();
+    let fitMode = get(pageFitMode);
 
     const imgAspect = img.width / img.height;
     const canvasAspect = canvasWidth / canvasHeight;
@@ -111,8 +112,7 @@
     ctx.drawImage(img, drawX, drawY, drawW, drawH);
 
     // Draw page number overlay
-    let showPageNums = true;
-    showPageNumbers.subscribe((v) => (showPageNums = v))();
+    const showPageNums = get(showPageNumbers);
     if (showPageNums) {
       const pg = $currentPageIndex + 1;
       const total = $totalPages;
@@ -146,8 +146,7 @@
 
   // Keyboard navigation
   function handleKeydown(e) {
-    const dir = 'ltr';
-    readingDirection.subscribe((v) => (dir = v))();
+    const dir = get(readingDirection);
 
     const isRtl = dir === 'rtl';
     const nextKeys = isRtl ? ['ArrowLeft'] : ['ArrowRight'];
@@ -192,8 +191,7 @@
     const x = e.clientX - rect.left;
     const centerX = rect.width / 2;
 
-    let dir = 'ltr';
-    readingDirection.subscribe((v) => (dir = v))();
+    const dir = get(readingDirection);
     const isRtl = dir === 'rtl';
 
     if (isRtl) {
