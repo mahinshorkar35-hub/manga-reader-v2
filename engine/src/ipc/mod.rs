@@ -39,12 +39,9 @@
 mod protocol;
 
 use anyhow::{Context, Result};
-use futures::stream::{SplitSink, SplitStream};
 use futures::{SinkExt, StreamExt};
-use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::net::{TcpListener, TcpStream};
-use tokio::sync::Mutex;
 use tokio_util::codec::{Framed, LinesCodec};
 
 use crate::EngineContext;
@@ -306,7 +303,7 @@ async fn handle_category_unassign(ctx: &Ctx, req: &JsonRpcRequest) -> Result<ser
     Ok(serde_json::json!({ "success": true }))
 }
 
-async fn handle_archive_extract(ctx: &Ctx, req: &JsonRpcRequest) -> Result<serde_json::Value> {
+async fn handle_archive_extract(_ctx: &Ctx, req: &JsonRpcRequest) -> Result<serde_json::Value> {
     let path = req.param_str("path")?;
     let entries = crate::archive::extract(&path)?;
     let entry_info: Vec<serde_json::Value> = entries
@@ -322,7 +319,7 @@ async fn handle_archive_extract(ctx: &Ctx, req: &JsonRpcRequest) -> Result<serde
     Ok(serde_json::json!({ "entries": entry_info, "count": entries.len() }))
 }
 
-async fn handle_panel_detect(ctx: &Ctx, req: &JsonRpcRequest) -> Result<serde_json::Value> {
+async fn handle_panel_detect(_ctx: &Ctx, req: &JsonRpcRequest) -> Result<serde_json::Value> {
     let image_path = req.param_str("image_path")?;
     let img = crate::image::decode_from_path(&image_path)?;
     let detector = crate::panel::default_detector();

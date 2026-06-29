@@ -75,6 +75,20 @@ pub struct ImageCache {
     access_counter: Mutex<u64>,
 }
 
+/// Manual `Clone` implementation because `Mutex` does not implement `Clone` in std.
+impl Clone for ImageCache {
+    fn clone(&self) -> Self {
+        Self {
+            cache_dir: self.cache_dir.clone(),
+            max_size: self.max_size,
+            hot_cache: Mutex::new(self.hot_cache.lock().unwrap().clone()),
+            index: Mutex::new(self.index.lock().unwrap().clone()),
+            policy: self.policy,
+            access_counter: Mutex::new(*self.access_counter.lock().unwrap()),
+        }
+    }
+}
+
 impl ImageCache {
     /// Create a new image cache rooted at `cache_dir` with the given max size.
     ///

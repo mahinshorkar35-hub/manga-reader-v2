@@ -29,7 +29,7 @@ pub fn extract_cbr<P: AsRef<Path>>(path: P) -> Result<Vec<ArchiveEntry>> {
         let file_name = entry.filename.to_string_lossy().to_string();
 
         // Skip directories and non-image files
-        if entry.is_directory || !is_image_filename(&file_name) {
+        if entry.is_directory() || !is_image_filename(&file_name) {
             continue;
         }
 
@@ -49,50 +49,31 @@ pub fn extract_cbr<P: AsRef<Path>>(path: P) -> Result<Vec<ArchiveEntry>> {
 
 /// Read a specific entry's data from a RAR archive.
 ///
-/// The `unrar` crate requires us to open the archive for extraction
-/// and use a `Read` implementation to get the data.
+/// Opens the archive for processing and scans entries until the
+/// requested one is found, reading its data into memory.
 fn read_entry_data<P: AsRef<Path>>(archive_path: P, entry_name: &str) -> Result<Vec<u8>> {
-    use std::io::Read;
-
     let archive_path = archive_path.as_ref();
 
-    // Open archive for extraction
     let mut archive = UnrarArchive::new(archive_path)
         .open_for_processing()
         .context("Failed to open CBR for extraction")?;
 
-    // Process entries until we find the one we want
     loop {
-        match archive {
-            unrar::Processing::List(..) => {
-                // We shouldn't get List here since we open_for_processing
-                anyhow::bail!("Unexpected list state while extracting CBR");
-            }
-            unrar::Processing::Extract(extract) => {
-                let entry_name_from_archive = extract
-                    .entry()
-                    .filename
-                    .to_string_lossy()
-                    .to_string();
+        let header = archive
+            .read_header()
+            .context("Failed to read CBR header")?
+            .ok_or_else(|| anyhow::anyhow!("Entry '{}' not found in CBR archive", entry_name))?;
 
-                if entry_name_from_archive == entry_name {
-                    // This is our entry — read it
-                    let mut data = Vec::new();
-                    extract
-                        .read_to_end(&mut data)
-                        .context("Failed to read entry data from CBR")?;
-                    archive = extract.done().context("Failed to finalize CBR entry")?;
-                    return Ok(data);
-                } else {
-                    // Skip this entry
-                    archive = extract
-                        .skip()
-                        .context("Failed to skip CBR entry")?;
-                }
-            }
-            unrar::Processing::Done => {
-                anyhow::bail!("Entry '{}' not found in CBR archive", entry_name);
-            }
+        if header.entry().filename.to_string_lossy() == entry_name {
+            let (data, rest) = header
+                .read()
+                .context("Failed to read entry data from CBR")?;
+            drop(rest);
+            return Ok(data);
+        } else {
+            archive = header
+                .skip()
+                .context("Failed to skip CBR entry")?;
         }
     }
 }

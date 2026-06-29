@@ -17,13 +17,14 @@ pub mod models;
 use anyhow::{Context, Result};
 use rusqlite::{params, Connection};
 use std::path::Path;
-use std::sync::Mutex;
+use std::sync::{Arc, Mutex};
 
 use models::*;
 
 /// Thread-safe wrapper around a SQLite connection.
+#[derive(Clone)]
 pub struct Database {
-    conn: Mutex<Connection>,
+    conn: Arc<Mutex<Connection>>,
 }
 
 impl Database {
@@ -43,7 +44,7 @@ impl Database {
             .context("Failed to enable foreign keys")?;
 
         let db = Self {
-            conn: Mutex::new(conn),
+            conn: Arc::new(Mutex::new(conn)),
         };
 
         // Run migrations
@@ -121,9 +122,9 @@ impl Database {
 
         let mut stmt = conn.prepare(sql)?;
 
-        let rows = match category_id {
-            Some(cid) => stmt.query_map(params![cid], |row| Manga::from_row(row))?,
-            None => stmt.query_map([], |row| Manga::from_row(row))?,
+        let rows: Box<dyn Iterator<Item = rusqlite::Result<Manga>>> = match category_id {
+            Some(cid) => Box::new(stmt.query_map(params![cid], |row| Manga::from_row(row))?),
+            None => Box::new(stmt.query_map([], |row| Manga::from_row(row))?),
         };
 
         let mut result = Vec::new();

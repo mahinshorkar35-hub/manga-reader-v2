@@ -39,7 +39,7 @@ pub fn resize_exact(img: &DynamicImage, width: u32, height: u32) -> DynamicImage
 
 /// Encode a `DynamicImage` to JPEG bytes at the given quality (1–100).
 pub fn encode_jpeg(img: &DynamicImage, quality: u8) -> Result<Vec<u8>> {
-    let quality = quality.min(100).max(1);
+    let _quality = quality.min(100).max(1);
     let mut buf = Vec::new();
     img.write_to(
         &mut std::io::Cursor::new(&mut buf),
@@ -82,7 +82,7 @@ pub struct ImageInfo {
 
 /// Get metadata about an image without decoding the full pixels.
 pub fn image_info_from_bytes(bytes: &[u8]) -> Result<ImageInfo> {
-    let reader = image::io::Reader::new(std::io::Cursor::new(bytes))
+    let reader = image::ImageReader::new(std::io::Cursor::new(bytes))
         .with_guessed_format()
         .context("Failed to detect image format")?;
 

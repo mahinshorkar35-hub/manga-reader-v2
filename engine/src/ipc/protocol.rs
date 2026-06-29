@@ -3,9 +3,8 @@
 //! Defines the request and response structures used for IPC
 //! communication between the engine and its clients.
 
-use anyhow::{bail, Result};
+use anyhow::Result;
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
 
 /// A JSON-RPC 2.0 request.
 #[derive(Debug, Clone, Serialize, Deserialize)]

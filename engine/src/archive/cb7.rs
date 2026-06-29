@@ -4,8 +4,7 @@
 //! CB7 is simply a 7z archive containing image files.
 
 use anyhow::{Context, Result};
-use sevenz_rust::SevenZReader;
-use std::io::Read;
+use sevenz_rust::{Password, SevenZReader};
 use std::path::Path;
 
 use super::{ArchiveEntry, is_image_filename};
@@ -19,43 +18,44 @@ pub fn extract_cb7<P: AsRef<Path>>(path: P) -> Result<Vec<ArchiveEntry>> {
 
     let file = std::fs::File::open(path)
         .context("Failed to open CB7 file")?;
+    let file_len = file
+        .metadata()
+        .context("Failed to get CB7 file metadata")?
+        .len();
 
-    let mut archive = SevenZReader::new(file, "".into())
-        .context("Failed to read CB7 archive")?;
+    let mut reader = SevenZReader::new(file, file_len, Password::empty())
+        .map_err(|e| anyhow::anyhow!("Failed to read CB7 archive: {}", e))?;
+
+    // Collect the names of image entries to match during iteration
+    let image_names: Vec<String> = reader
+        .archive()
+        .files
+        .iter()
+        .filter(|e| !e.is_directory() && is_image_filename(e.name()))
+        .map(|e| e.name().to_string())
+        .collect();
 
     let mut entries = Vec::new();
 
-    // Get the list of entries in the archive
-    let archive_entries = archive
-        .entries()
-        .context("Failed to list entries in CB7 archive")?;
-
-    // Filter for image files
-    let image_entries: Vec<_> = archive_entries
-        .iter()
-        .filter(|e| {
-            !e.is_directory() && is_image_filename(
-                e.name()
-                    .unwrap_or("<unknown>")
-            )
+    // Process the archive — for_each_entries calls the closure for every entry
+    // with a streaming reader for its decompressed content.
+    reader
+        .for_each_entries(|entry, entry_reader| {
+            let name = entry.name();
+            if image_names.iter().any(|n| n == name) {
+                let mut data = Vec::new();
+                entry_reader
+                    .read_to_end(&mut data)
+                    .map_err(|e| sevenz_rust::Error::from(e))?;
+                entries.push(ArchiveEntry {
+                    path: Path::new(name).to_path_buf(),
+                    data,
+                    page_index: 0,
+                });
+            }
+            Ok(true)
         })
-        .collect();
-
-    // Read each image entry
-    for entry in &image_entries {
-        let name = entry.name().context("Entry has no name")?.to_string();
-
-        let mut data = Vec::new();
-        archive
-            .read_entry(name.as_str(), &mut data)
-            .context(format!("Failed to read '{}' from CB7 archive", name))?;
-
-        entries.push(ArchiveEntry {
-            path: Path::new(&name).to_path_buf(),
-            data,
-            page_index: 0,
-        });
-    }
+        .map_err(|e| anyhow::anyhow!("Failed to read entries from CB7 archive: {}", e))?;
 
     Ok(entries)
 }

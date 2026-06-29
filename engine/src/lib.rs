@@ -11,12 +11,15 @@
 //! - ONNX Runtime YOLO inference (optional)
 
 pub mod archive;
+#[cfg(feature = "sqlite")]
 pub mod db;
 pub mod image;
 pub mod ipc;
 pub mod panel;
+#[cfg(feature = "fts")]
 pub mod search;
 
+use std::sync::Arc;
 use anyhow::Result;
 
 /// Engine configuration loaded at startup.
@@ -46,7 +49,7 @@ impl Default for EngineConfig {
             db_path: "manga_reader.db".to_string(),
             cache_dir: "cache".to_string(),
             index_dir: "index".to_string(),
-            ipc_endpoint: "\\\\.\\pipe\\manga-reader-engine".to_string(),
+            ipc_endpoint: "127.0.0.1:8500".to_string(),
             max_cache_size: 512 * 1024 * 1024,
             gpu_enabled: cfg!(feature = "gpu"),
             yolo_enabled: cfg!(feature = "yolo"),
@@ -78,25 +81,31 @@ pub async fn initialize(config: EngineConfig) -> Result<EngineContext> {
 #[derive(Clone)]
 pub struct EngineContext {
     pub config: EngineConfig,
-    pub db: db::Database,
-    pub search: search::SearchIndex,
-    pub image_cache: image::cache::ImageCache,
+    #[cfg(feature = "sqlite")]
+    pub db: Arc<db::Database>,
+    #[cfg(feature = "fts")]
+    pub search: Arc<search::SearchIndex>,
+    pub image_cache: Arc<image::cache::ImageCache>,
 }
 
 impl EngineContext {
     pub async fn new(config: EngineConfig) -> anyhow::Result<Self> {
         // Initialize database
-        let db = db::Database::open(&config.db_path)?;
+        #[cfg(feature = "sqlite")]
+        let db = Arc::new(db::Database::open(&config.db_path)?);
 
         // Initialize search index
-        let search = search::SearchIndex::open(&config.index_dir)?;
+        #[cfg(feature = "fts")]
+        let search = Arc::new(search::SearchIndex::open(&config.index_dir)?);
 
         // Initialize image cache
-        let image_cache = image::cache::ImageCache::new(&config.cache_dir, config.max_cache_size)?;
+        let image_cache = Arc::new(image::cache::ImageCache::new(&config.cache_dir, config.max_cache_size)?);
 
         Ok(Self {
             config,
+            #[cfg(feature = "sqlite")]
             db,
+            #[cfg(feature = "fts")]
             search,
             image_cache,
         })

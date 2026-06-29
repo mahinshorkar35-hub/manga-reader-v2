@@ -206,7 +206,7 @@ impl GutterDetector {
 
     /// Extract panel regions from the page using horizontal and vertical splits.
     fn extract_panels(
-        img: &GrayImage,
+        _img: &GrayImage,
         h_splits: &[usize],
         v_splits: &[usize],
         min_width: u32,
@@ -295,7 +295,7 @@ impl PanelDetector for GutterDetector {
             }
 
             // Crop the strip for vertical analysis
-            let strip = binary.crop_imm(0, y_start, page_width, strip_height);
+            let strip = image::imageops::crop_imm(&binary, 0, y_start, page_width, strip_height).to_image();
             let v_proj = Self::vertical_projection(&strip);
 
             let v_gutter_threshold = (strip_height as f64 * 0.05) as u32;

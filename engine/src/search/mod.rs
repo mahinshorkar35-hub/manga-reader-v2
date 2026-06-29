@@ -15,10 +15,11 @@
 
 use anyhow::{Context, Result};
 use std::path::Path;
+use std::sync::Arc;
 use tantivy::collector::TopDocs;
-use tantivy::query::QueryParser;
+use tantivy::query::{BoostQuery, Occur, QueryParser};
 use tantivy::schema::*;
-use tantivy::{doc, Index, IndexReader, IndexWriter, ReloadPolicy, TantivyDocument};
+use tantivy::{Index, IndexReader, IndexWriter, ReloadPolicy, TantivyDocument};
 
 /// Search result from a Tantivy query.
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
@@ -38,16 +39,18 @@ pub struct SearchResult {
 }
 
 /// The full-text search index wrapper.
+#[derive(Clone)]
 pub struct SearchIndex {
     schema: Schema,
     index: Index,
     reader: IndexReader,
-    writer: std::sync::Mutex<IndexWriter>,
+    writer: Arc<std::sync::Mutex<IndexWriter>>,
     /// Field definitions for internal use.
     fields: SearchFields,
 }
 
 /// Internal field references for the Tantivy schema.
+#[derive(Clone)]
 struct SearchFields {
     id: Field,
     record_type: Field,
@@ -89,7 +92,8 @@ impl SearchIndex {
             .try_into()
             .context("Failed to create Tantivy reader")?;
 
-        let writer = IndexWriter::new(&index)
+        let writer = index
+            .writer_with_num_threads(1, 50_000_000)
             .context("Failed to create Tantivy writer")?;
 
         log::info!("Search index opened at: {}", path.display());
@@ -98,7 +102,7 @@ impl SearchIndex {
             schema,
             index,
             reader,
-            writer: std::sync::Mutex::new(writer),
+            writer: Arc::new(std::sync::Mutex::new(writer)),
             fields,
         })
     }
@@ -186,7 +190,7 @@ impl SearchIndex {
     /// Remove a document by ID.
     pub fn remove_document(&self, id: u64) -> Result<()> {
         let mut writer = self.writer.lock().unwrap();
-        let term = tantivy::Term::of_field(self.fields.id, id);
+        let term = tantivy::Term::from_field_u64(self.fields.id, id);
         writer.delete_term(term);
         writer.commit()?;
         Ok(())
@@ -208,7 +212,7 @@ impl SearchIndex {
         ]);
 
         // Enable fuzzy matching with 1 edit distance
-        query_parser.set_field_fuzzy(self.fields.title, true, 1, 3);
+        query_parser.set_field_fuzzy(self.fields.title, true, 1u8, true);
 
         let query = query_parser
             .parse_query(query_str)
@@ -216,11 +220,11 @@ impl SearchIndex {
 
         // Apply manga_id filter if specified
         let query = if let Some(mid) = manga_id {
-            let term = tantivy::Term::of_field(self.fields.manga_id, mid as u64);
+            let term = tantivy::Term::from_field_u64(self.fields.manga_id, mid as u64);
             let term_query = tantivy::query::TermQuery::new(term, tantivy::schema::IndexRecordOption::Basic);
-            let subqueries: Vec<(f64, Box<dyn tantivy::query::Query>)> = vec![
-                (1.0, Box::new(query)),
-                (0.0, Box::new(term_query)),
+            let subqueries: Vec<(Occur, Box<dyn tantivy::query::Query>)> = vec![
+                (Occur::Must, Box::new(query)),
+                (Occur::Must, Box::new(BoostQuery::new(Box::new(term_query), 0.0))),
             ];
             Box::new(tantivy::query::BooleanQuery::new(subqueries)) as Box<dyn tantivy::query::Query>
         } else {

@@ -46,7 +46,7 @@ fn load_config() -> Result<EngineConfig> {
         cache_dir: std::env::var("MANGA_CACHE_DIR").unwrap_or_else(|_| "cache".into()),
         index_dir: std::env::var("MANGA_INDEX_DIR").unwrap_or_else(|_| "index".into()),
         ipc_endpoint: std::env::var("MANGA_IPC_ENDPOINT")
-            .unwrap_or_else(|_| "\\\\.\\pipe\\manga-reader-engine".into()),
+            .unwrap_or_else(|_| "127.0.0.1:8500".into()),
         max_cache_size: std::env::var("MANGA_MAX_CACHE_SIZE")
             .ok()
             .and_then(|s| s.parse().ok())
