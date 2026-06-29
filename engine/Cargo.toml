@@ -1,0 +1,86 @@
+[package]
+name = "manga-reader-engine"
+version = "0.1.0"
+edition = "2021"
+description = "Rust core engine for manga reader with archive extraction, image processing, panel detection, SQLite storage, FTS search, and IPC server"
+
+[lib]
+name = "manga_reader_engine"
+path = "src/lib.rs"
+
+[[bin]]
+name = "manga-reader-engine"
+path = "src/main.rs"
+
+[dependencies]
+# Async runtime
+tokio = { version = "1", features = ["full"] }
+
+# Serialization
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+# Image processing
+image = "0.25"
+
+# Archive extraction
+zip = "0.6"          # CBZ (ZIP archives)
+tar = "0.4"          # General tar support
+flate2 = "1"         # GZ decompression
+bzip2 = "0.5"        # BZ2 decompression
+sevenz-rust = "0.6"  # 7z extraction (CB7)
+unrar = "0.6"        # RAR extraction (CBR)
+
+# Database
+rusqlite = { version = "0.31", features = ["bundled"] }
+
+# Full-text search
+tantivy = "0.22"
+
+# GPU compute (will be conditionally compiled)
+wgpu = "0.19"
+bytemuck = { version = "1", features = ["derive"] }
+
+# ONNX Runtime for YOLO inference
+ort = "2"            # onnxruntime-rs (ort crate)
+
+# IPC and networking
+tokio-util = "0.7"
+
+# Memory-mapped I/O for cache
+memmap2 = "0.9"
+
+# LRU cache
+lru = "0.12"
+
+# Logging
+log = "0.4"
+env_logger = "0.11"
+
+# Error handling
+anyhow = "1"
+thiserror = "1"
+
+# UUIDs
+uuid = { version = "1", features = ["v4", "serde"] }
+
+# Date/time
+chrono = { version = "0.4", features = ["serde"] }
+
+# Path handling
+walkdir = "2"
+
+# Async stream
+futures = "0.3"
+
+[features]
+default = ["gpu"]
+gpu = ["wgpu"]
+yolo = ["ort"]
+sqlite = ["rusqlite"]
+fts = ["tantivy"]
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1

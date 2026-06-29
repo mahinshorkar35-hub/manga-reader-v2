@@ -1,0 +1,90 @@
+<Window
+    x:Class="MangaReader.Views.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:vm="using:MangaReader.ViewModels"
+    mc:Ignorable="d"
+    Title="Manga Reader"
+    MinWidth="900"
+    MinHeight="600"
+    Width="1200"
+    Height="800">
+
+    <Grid Background="{StaticResource AppBackgroundBrush}">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="220" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <!-- Navigation Sidebar -->
+        <Border Grid.Column="0" Background="{StaticResource SurfaceBrush}">
+            <Grid RowDefinitions="Auto,*,Auto">
+                <!-- App Branding -->
+                <StackPanel Grid.Row="0" Margin="24,24,24,16">
+                    <TextBlock Text="Manga Reader" FontSize="20" FontWeight="Bold"
+                               Foreground="{StaticResource AccentBrush}" />
+                    <TextBlock Text="{Binding StatusMessage, FallbackValue='Ready'}"
+                               FontSize="12" Foreground="{StaticResource TextSecondaryBrush}"
+                               Margin="0,4,0,0" />
+                </StackPanel>
+
+                <!-- Navigation Buttons -->
+                <StackPanel Grid.Row="1" Margin="0,8,0,0">
+                    <Button x:Name="NavLibrary" Style="{StaticResource NavButtonStyle}"
+                            Command="{Binding NavigateToCommand}" CommandParameter="Library"
+                            IsEnabled="{Binding CurrentPage, Converter={StaticResource NotEqualConverter}, ConverterParameter=Library}">
+                        <StackPanel Orientation="Horizontal" Spacing="12">
+                            <TextBlock Text="&#x1F4DA;" FontSize="18" />
+                            <TextBlock Text="Library" />
+                        </StackPanel>
+                    </Button>
+
+                    <Button x:Name="NavReader" Style="{StaticResource NavButtonStyle}"
+                            Command="{Binding NavigateToCommand}" CommandParameter="Reader"
+                            IsEnabled="{Binding CurrentPage, Converter={StaticResource NotEqualConverter}, ConverterParameter=Reader}">
+                        <StackPanel Orientation="Horizontal" Spacing="12">
+                            <TextBlock Text="&#x1F4D6;" FontSize="18" />
+                            <TextBlock Text="Reader" />
+                        </StackPanel>
+                    </Button>
+
+                    <Button x:Name="NavSettings" Style="{StaticResource NavButtonStyle}"
+                            Command="{Binding NavigateToCommand}" CommandParameter="Settings"
+                            IsEnabled="{Binding CurrentPage, Converter={StaticResource NotEqualConverter}, ConverterParameter=Settings}">
+                        <StackPanel Orientation="Horizontal" Spacing="12">
+                            <TextBlock Text="&#x2699;&#xFE0F;" FontSize="18" />
+                            <TextBlock Text="Settings" />
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+
+                <!-- Connection Status -->
+                <StackPanel Grid.Row="2" Margin="16,0,16,16">
+                    <Border CornerRadius="6" Padding="12,8"
+                            Background="{StaticResource SurfaceLightBrush}">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <Ellipse Width="10" Height="10"
+                                     Fill="{Binding IsConnected, Converter={StaticResource BoolToConnectionColor}}" />
+                            <TextBlock Text="{Binding IsConnected, Converter={StaticResource BoolToConnectionText}}"
+                                       FontSize="13" Foreground="{StaticResource TextSecondaryBrush}" />
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Main Content Area -->
+        <Grid Grid.Column="1">
+            <!-- Library Page -->
+            <Frame x:Name="ContentFrame" Navigate="OnContentFrameNavigated">
+                <Frame.ContentTransitions>
+                    <TransitionCollection>
+                        <NavigationThemeTransition />
+                    </TransitionCollection>
+                </Frame.ContentTransitions>
+            </Frame>
+        </Grid>
+    </Grid>
+</Window>

@@ -1,0 +1,24 @@
+Metadata-Version: 2.4
+Name: manga-reader-ai-pipeline
+Version: 0.1.0
+Summary: AI pipeline for manga reader v2 — vision analysis, OCR, TTS, and LLM integration
+Author-email: Nous Research <dev@nousresearch.com>
+License: MIT
+Requires-Python: >=3.11
+Requires-Dist: google-genai>=1.0.0
+Requires-Dist: kokoro>=0.9.0
+Requires-Dist: soundfile>=0.12.0
+Requires-Dist: numpy>=1.24.0
+Requires-Dist: Pillow>=10.0.0
+Requires-Dist: pydantic>=2.0.0
+Requires-Dist: pydantic-settings>=2.0.0
+Requires-Dist: python-dotenv>=1.0.0
+Requires-Dist: moviepy>=2.0.0
+Requires-Dist: aiofiles>=24.0.0
+Provides-Extra: ocr
+Requires-Dist: easyocr>=1.7.0; extra == "ocr"
+Provides-Extra: dev
+Requires-Dist: pytest>=7.0; extra == "dev"
+Requires-Dist: pytest-asyncio>=0.23.0; extra == "dev"
+Requires-Dist: ruff>=0.1.0; extra == "dev"
+Requires-Dist: mypy>=1.0.0; extra == "dev"

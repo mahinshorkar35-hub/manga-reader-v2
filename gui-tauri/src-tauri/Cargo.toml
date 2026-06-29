@@ -1,0 +1,26 @@
+[package]
+name = "manga-reader-tauri"
+version = "2.0.0"
+description = "Manga Reader v2 - Cross-platform Tauri GUI"
+authors = ["Manga Reader Team"]
+edition = "2021"
+
+[lib]
+name = "manga_reader_tauri_lib"
+crate-type = ["lib", "cdylib", "staticlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = ["isolation"] }
+
+[dependencies]
+tauri = { version = "2", features = ["protocol-asset"] }
+tauri-plugin-dialog = "2"
+tauri-plugin-fs = "2"
+tauri-plugin-shell = "2"
+tauri-plugin-process = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tokio = { version = "1", features = ["full"] }
+image = "0.25"
+base64 = "0.22"
+uuid = { version = "1", features = ["v4"] }
