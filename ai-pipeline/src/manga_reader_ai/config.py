@@ -5,9 +5,11 @@ Uses pydantic-settings to load from environment variables / .env file.
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
-from typing import Literal
+from typing import Any, Literal
 
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -44,6 +46,17 @@ class Settings(BaseSettings):
     # ── OCR ────────────────────────────────────────────────────────────
     ocr_languages: list[str] = ["ja", "en"]
     ocr_gpu: bool = True
+
+    @field_validator("ocr_languages", mode="before")
+    @classmethod
+    def parse_ocr_languages(cls, v: Any) -> list[str]:
+        """Accept both JSON arrays and comma-separated strings."""
+        if isinstance(v, str):
+            v = v.strip()
+            if v.startswith("["):
+                return json.loads(v)
+            return [x.strip() for x in v.split(",") if x.strip()]
+        return v
 
     # ── Output ─────────────────────────────────────────────────────────
     output_dir: Path = Path("output")

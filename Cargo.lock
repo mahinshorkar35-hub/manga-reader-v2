@@ -1681,6 +1681,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "manga-metadata-fetcher-plugin"
+version = "0.1.0"
+dependencies = [
+ "manga-reader-plugin",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "manga-reader-engine"
 version = "0.1.0"
 dependencies = [
@@ -1716,6 +1725,15 @@ dependencies = [
 name = "manga-reader-plugin"
 version = "0.1.0"
 dependencies = [
+ "serde",
+ "serde_json",
+]
+
+[[package]]
+name = "manga-translator-plugin"
+version = "0.1.0"
+dependencies = [
+ "manga-reader-plugin",
  "serde",
  "serde_json",
 ]

@@ -10,7 +10,7 @@
 //! ```
 
 use manga_reader_plugin::{
-    register_plugin, BoundingBox, ChapterInfo, HookAction, HookResult, PageInfo, PanelInfo, Plugin,
+    register_plugin, ChapterInfo, HookAction, HookResult, PageInfo, PanelInfo, Plugin,
     PluginMetadata,
 };
 
@@ -22,6 +22,7 @@ use manga_reader_plugin::{
 ///
 /// In a real plugin this would call an external translation API (DeepL,
 /// Google Translate, etc.) over WASI HTTP or via a host bridge.
+#[derive(Default)]
 pub struct TranslatorPlugin;
 
 impl TranslatorPlugin {
@@ -107,7 +108,7 @@ impl Plugin for TranslatorPlugin {
     /// Here we inject a transparent overlay that signals translations are
     /// available.  The host renderer can parse the returned JSON and display
     /// a floating "Translate" button.
-    fn on_page_open(page: &PageInfo) -> Option<HookResult> {
+    fn on_page_open(&self, page: &PageInfo) -> Option<HookResult> {
         // Only show the overlay on pages that look like they contain dialogue
         // (heuristic: pages wider than 700 px are likely spreads with text).
         if page.width > 700 {
@@ -119,12 +120,12 @@ impl Plugin for TranslatorPlugin {
 
     /// Called when a chapter starts — not used by this translator plugin,
     /// but we could pre-fetch a translation glossary here.
-    fn on_chapter_start(_chapter: &ChapterInfo) -> Option<HookResult> {
+    fn on_chapter_start(&self, _chapter: &ChapterInfo) -> Option<HookResult> {
         None
     }
 
     /// Called after panel detection — not used by the translator.
-    fn on_panel_detected(_panels: &[PanelInfo]) -> Option<HookResult> {
+    fn on_panel_detected(&self, _panels: &[PanelInfo]) -> Option<HookResult> {
         None
     }
 
@@ -133,7 +134,7 @@ impl Plugin for TranslatorPlugin {
     /// This is the primary hook for this plugin.  We "translate" the
     /// selected text using our mock dictionary and return the result so
     /// the host can show it in a tooltip or replace the selection.
-    fn on_text_selected(text: &str) -> Option<HookResult> {
+    fn on_text_selected(&self, text: &str) -> Option<HookResult> {
         // Ignore very short selections (accidental taps).
         let trimmed = text.trim();
         if trimmed.len() < 2 {

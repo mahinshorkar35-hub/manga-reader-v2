@@ -1,12 +1,21 @@
 <Application
     x:Class="MangaReader.App"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:converters="using:MangaReader.Converters">
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
             </ResourceDictionary.MergedDictionaries>
+
+            <!-- Value Converters -->
+            <converters:NotEqualConverter x:Key="NotEqualConverter" />
+            <converters:BoolToConnectionColorConverter x:Key="BoolToConnectionColor" />
+            <converters:BoolToConnectionTextConverter x:Key="BoolToConnectionText" />
+            <converters:BoolToConnectTextConverter x:Key="BoolToConnectText" />
+            <converters:BoolToConnectActionConverter x:Key="BoolToConnectAction" />
+            <converters:EmptyToVisibilityConverter x:Key="EmptyToVisibility" />
 
             <!-- App-wide color palette -->
             <SolidColorBrush x:Key="AppBackgroundBrush" Color="#1A1A1A" />

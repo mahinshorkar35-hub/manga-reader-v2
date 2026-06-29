@@ -23,6 +23,7 @@ use manga_reader_plugin::{
 ///
 /// In a real plugin this would scrape AniList, MAL, or a custom API
 /// over WASI HTTP.
+#[derive(Default)]
 pub struct MetadataFetcherPlugin;
 
 impl MetadataFetcherPlugin {
@@ -107,7 +108,7 @@ impl MetadataFetcherPlugin {
 
 impl Plugin for MetadataFetcherPlugin {
     /// Called when a new page opens — not used by this plugin.
-    fn on_page_open(_page: &PageInfo) -> Option<HookResult> {
+    fn on_page_open(&self, _page: &PageInfo) -> Option<HookResult> {
         None
     }
 
@@ -116,7 +117,7 @@ impl Plugin for MetadataFetcherPlugin {
     /// We "fetch" metadata for the chapter and return it as an override
     /// payload.  The host can display a chapter info card (synopsis,
     /// rating, release date) before the first page.
-    fn on_chapter_start(chapter: &ChapterInfo) -> Option<HookResult> {
+    fn on_chapter_start(&self, chapter: &ChapterInfo) -> Option<HookResult> {
         let metadata = Self::fetch_metadata(chapter);
 
         let message = format!(
@@ -144,7 +145,7 @@ impl Plugin for MetadataFetcherPlugin {
     /// We classify each panel and attach tags.  The host can use these
     /// tags to filter or style panels differently (e.g., colour-code
     /// dialogue vs. narrative boxes).
-    fn on_panel_detected(panels: &[PanelInfo]) -> Option<HookResult> {
+    fn on_panel_detected(&self, panels: &[PanelInfo]) -> Option<HookResult> {
         if panels.is_empty() {
             return None;
         }
@@ -200,7 +201,7 @@ impl Plugin for MetadataFetcherPlugin {
     }
 
     /// Called when text is selected — not used by this metadata plugin.
-    fn on_text_selected(_text: &str) -> Option<HookResult> {
+    fn on_text_selected(&self, _text: &str) -> Option<HookResult> {
         None
     }
 }

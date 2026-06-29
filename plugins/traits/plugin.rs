@@ -131,7 +131,7 @@ pub trait Plugin {
     /// - Apply image filters or overlays.
     /// - Trigger AI upscaling / colourisation.
     /// - Add watermark or annotation layers.
-    fn on_page_open(page: &PageInfo) -> Option<HookResult>;
+    fn on_page_open(&self, page: &PageInfo) -> Option<HookResult>;
 
     /// Called when a new chapter starts.
     ///
@@ -139,7 +139,7 @@ pub trait Plugin {
     /// - Prefetch external translations.
     /// - Initialise chapter-level state.
     /// - Fetch metadata (synopsis, summaries).
-    fn on_chapter_start(chapter: &ChapterInfo) -> Option<HookResult>;
+    fn on_chapter_start(&self, chapter: &ChapterInfo) -> Option<HookResult>;
 
     /// Called after panels / speech bubbles have been detected on a page.
     ///
@@ -147,7 +147,7 @@ pub trait Plugin {
     /// - Re-classify or tag panels (e.g., mark as "flashback").
     /// - Merge/split overlapping regions.
     /// - Attach confidence thresholds.
-    fn on_panel_detected(panels: &[PanelInfo]) -> Option<HookResult>;
+    fn on_panel_detected(&self, panels: &[PanelInfo]) -> Option<HookResult>;
 
     /// Called when the user selects/highlights text in a panel.
     ///
@@ -155,7 +155,7 @@ pub trait Plugin {
     /// - Look up the selected text in a dictionary.
     /// - Provide inline translation.
     /// - Save to a personal vocabulary list.
-    fn on_text_selected(text: &str) -> Option<HookResult>;
+    fn on_text_selected(&self, text: &str) -> Option<HookResult>;
 }
 
 // ---------------------------------------------------------------------------
@@ -202,17 +202,15 @@ macro_rules! register_plugin {
 
         #[no_mangle]
         pub extern "C" fn _plugin_create() -> *mut dyn $crate::Plugin {
-            let plugin: $crate::Plugin = <$plugin_type>::default();
+            let plugin = <$plugin_type>::default();
             let boxed: Box<dyn $crate::Plugin> = Box::new(plugin);
             Box::into_raw(boxed)
         }
 
         #[no_mangle]
-        pub extern "C" fn _plugin_destroy(ptr: *mut dyn $crate::Plugin) {
+        pub unsafe extern "C" fn _plugin_destroy(ptr: *mut dyn $crate::Plugin) {
             if !ptr.is_null() {
-                unsafe {
-                    let _ = Box::from_raw(ptr);
-                }
+                let _ = Box::from_raw(ptr);
             }
         }
     };
