@@ -34,3 +34,9 @@ Thumbs.db
 
 # OS
 .DS_Store
+
+# Databases
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
